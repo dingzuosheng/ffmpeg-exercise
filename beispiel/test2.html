@@ -1,0 +1,41 @@
+<body>
+    <video id="video" controls src="./video.webm" width="640" height="480"></video>
+    <video id="videocutRef" width="640" height="480"></video>
+    <button id="cut">cut</button>
+    <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.9.5/dist/ffmpeg.min.js"></script>
+    <script>
+
+        const { createFFmpeg, fetchFile } = FFmpeg;
+
+        const ffmpeg = createFFmpeg({ log: true });
+        const transcode = async () => {
+            await ffmpeg.load();
+            ffmpeg.FS("writeFile", "video.webm", await fetchFile("F:/Abschlussarbeit/Tutorial-Canvas/video.webm"));
+            console.log("video ist gefetcht");
+            ffmpeg.FS(
+                "writeFile",
+                "watermark.png",
+                await fetchFile("F:/Abschlussarbeit/Tutorial-Canvas/watermark.PNG")
+            );
+            console.log("watermark ist gefetcht");
+            await ffmpeg.run(
+                "-i",
+                "video.webm",
+                "-i",
+                "watermark.PNG",
+                "-filter_complex",
+                "overlay=x=65:y=355",
+                "result.webm"
+            );
+            const data = ffmpeg.FS("readFile", "result.webm");
+            const video = document.getElementById("videoCutRef");
+            video.src = URL.createObjectURL(
+                new Blob([data.buffer], "result.webm", {
+                    type: "video/webm",
+                })
+            );
+        }
+        document
+            .getElementById('cut').addEventListener('click', transcode);
+    </script>
+</body>
